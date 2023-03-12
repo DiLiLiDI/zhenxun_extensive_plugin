@@ -32,4 +32,4 @@ boa = on_command("答案之书", aliases={"答案书"}, priority=20, block=True)
 
 @boa.handle()
 async def _(bot: Bot, event: MessageEvent):
-    await boa.finish(random.choice(book_of_answers))
+    await boa.finish(random.choice(book_of_answers), at_sender=True)
