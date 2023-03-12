@@ -12,9 +12,7 @@ usage：
         答案之书+你的问题：获取你内心的答案吧
 """.strip()
 __plugin_des__ = "答案之书"
-__plugin_cmd__ = [
-    "答案之书/寻找你的答案"
-]
+__plugin_cmd__ = ["答案之书/寻找你的答案"]
 __plugin_type__ = ("群内小游戏", )
 __plugin_version__ = 1.0
 __plugin_author__ = "DiLiDiLi"
