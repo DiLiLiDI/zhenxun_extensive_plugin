@@ -7,8 +7,8 @@ from nonebot.adapters.onebot.v11 import Bot, MessageEvent
 __zx_plugin_name__ = "答案之书"
 __plugin_usage__ = """
 usage：
-    答案之书，通过答案之书寻找你内心的答案。
-    指令：
+	答案之书，通过答案之书寻找你内心的答案。
+	指令：
         答案之书+你的问题：获取你内心的答案吧
 """.strip()
 __plugin_des__ = "答案之书"
