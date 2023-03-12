@@ -17,7 +17,7 @@ __plugin_cmd__ = [
 ]
 __plugin_type__ = ("群内小游戏", )
 __plugin_version__ = 1.0
-__plugin_author__ = "zdf"
+__plugin_author__ = "DiLiDiLi"
 __plugin_settings__ = {
     "level": 5,
     "default_status": True,
