@@ -69,7 +69,8 @@ async def handle_suangua(bot: Bot, event: Event,  arg: Message = CommandArg()):
 				result = random.randint(1, 64)
 				msg_text = guaxiang_info[result]
 				msg_image = image(f"{GUA_IMAGE_PATH}/{result}.jpg")
-				read_json_file(suangua_record, result)
+				record[gid][uid] = result
+				read_json_file(suangua_record, record)
 				await suangua.finish(msg_image + msg_text, at_sender=True)
 	except KeyError:
 		record[gid] = {}
