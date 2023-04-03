@@ -1,7 +1,6 @@
 import random
 import json as json
 from pathlib import Path
-from services.log import logger
 from nonebot import on_command
 from nonebot.adapters.onebot.v11 import Bot, Event, Message
 from nonebot.params import CommandArg, Arg
@@ -11,9 +10,9 @@ from nonebot_plugin_apscheduler import scheduler
 __zx_plugin_name__ = "算卦"
 __plugin_usage__ = """
 usage：
-    算卦不算命
-    指令：
-        算卦
+	算卦不算命
+	指令：
+		算卦
 """.strip()
 __plugin_version__ = "1.0"
 __plugin_des__ = "每日一卦"
@@ -27,64 +26,58 @@ __plugin_settings__ = {
 	"cmd": ["算卦"],
 }
 
-dir_path = Path(__file__).parent
-gua_path = dir_path / 'gua'
-suangua_record = dir_path / 'suangua.json'
+suangua_record = Path(__file__).parent / 'suangua.json'
+GUAXIANG_PATH = Path(__file__).parent / '64.json'
+GUA_IMAGE_PATH = Path(__file__).parent / 'gua'
 
 
-def readInfo(file, info=None):
-	path = Path(file)
-	with path.open("r", encoding="utf-8") as f:
-		context = f.read()
+# 定义读写json文件的函数
+def read_json_file(file: Path, info=None) -> dict:
+	with file.open("r", encoding="utf-8") as f:
+		content = f.read()
 		if info is not None:
-			with path.open("w", encoding="utf-8") as f:
+			with file.open("w", encoding="utf-8") as f:
 				f.write(json.dumps(info, indent=4, ensure_ascii=False))
-			with path.open("r", encoding="utf-8") as f:
-				data = f.read()
-			return {"data": json.loads(context.strip())}
+			return {"data": json.loads(content)}
 		else:
-			return json.loads(context.strip())
+			return json.loads(content)
 
 
-# 创建命令对象
+# 创建命令处理对象
 suangua = on_command("算卦", aliases={"来一卦"}, priority=5, block=True)
 
 
-# 定义处理函数
+# 定义命令处理函数
 @suangua.handle()
-async def handle_suangua(bot: Bot, event: Event, arg: Message = CommandArg()):
+async def handle_suangua(bot: Bot, event: Event,  arg: Message = CommandArg()):
 	if not suangua_record.exists():
 		with open(suangua_record, "w", encoding="utf-8") as f:
 			f.write('{}')
-	gid: str = str(event.group_id)
-	uid: str = str(event.user_id)
-	guaxiang = open(f"{dir_path}/64.json", 'r', encoding='utf-8')
-	guaxiang_content = guaxiang.read()
-	array_json = json.loads(guaxiang_content)
-	content = readInfo(suangua_record)
-	# 检查用户是否在字典中
+	guaxiang_info = read_json_file(Path(GUAXIANG_PATH))
+	record = read_json_file(suangua_record)
+	gid, uid = str(event.group_id), str(event.user_id)
+
 	try:
-		if content[gid]:
-			pass
+		if record[gid]:
+			try:
+				if record[gid][uid]:
+					result = record[gid][uid]
+					msg_text = guaxiang_info[result]
+					msg_image = image(f"{GUA_IMAGE_PATH}/{result}.jpg")
+					await suangua.finish("不能再窥探天机了！\n" + "上一次的卦象是：\n" + msg_image + msg_text, at_sender=True)
+			except KeyError:
+				result = random.randint(1, 64)
+				msg_text = guaxiang_info[result]
+				msg_image = image(f"{GUA_IMAGE_PATH}/{result}.jpg")
+				read_json_file(suangua_record, result)
+				await suangua.finish(msg_image + msg_text, at_sender=True)
 	except KeyError:
-		content[gid] = {}
-	try:
-		if content[gid][uid]:
-			json_file_gua = open(suangua_record)
-			json_gua_content = json_file_gua.read()
-			last_data = json.loads(json_gua_content)
-			result = last_data[gid][uid]
-			msg_text = array_json[result]
-			logger.info(f"算卦：第{result}卦")
-			msg_image = image(f"{gua_path}/{result}.jpg")
-			await suangua.finish("不能再窥探天机了！\n" + "上一次的卦象是：\n" + msg_image + msg_text, at_sender=True)
-	except KeyError:
-		rand = random.randint(0, 64)
-		msg_text = array_json[rand]
-		logger.info(f"算卦：第{rand}卦")
-		msg_image = image(f"{gua_path}/{rand}.jpg")
-		content[gid][uid] = rand
-		readInfo(suangua_record, content)
+		record[gid] = {}
+		result = random.randint(1, 64)
+		msg_text = guaxiang_info[result]
+		msg_image = image(f"{GUA_IMAGE_PATH}/{result}.jpg")
+		record[gid][uid] = result
+		read_json_file(suangua_record, record)
 		await suangua.finish(msg_image + msg_text, at_sender=True)
 
 
